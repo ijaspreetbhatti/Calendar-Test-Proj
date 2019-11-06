@@ -45,8 +45,8 @@ export class AppComponent {
   }
 
   handleEventClick(arg) {
-    console.log(arg);
-    console.log(this.calendarEvents.splice(this.calendarEvents.indexOf({ title: arg.event.title, start: arg.event.start }), 1));
+    console.log(arg + "was deleted!");
+    this.calendarEvents.splice(this.calendarEvents.indexOf({ title: arg.event.title, start: arg.event.start }), 1);
     arg.event.remove();
   }
 

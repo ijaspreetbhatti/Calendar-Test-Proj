@@ -1,9 +1,11 @@
 import { Component, ViewChild } from '@angular/core';
 import { FullCalendarComponent } from '@fullcalendar/angular';
-import { EventInput } from '@fullcalendar/core';
+import { EventInput, Calendar } from '@fullcalendar/core';
 import dayGridPlugin from '@fullcalendar/daygrid';
-import timeGrigPlugin from '@fullcalendar/timegrid';
-import interactionPlugin from '@fullcalendar/interaction'; // for dateClick
+import timeGridPlugin from '@fullcalendar/timegrid';
+import interactionPlugin from '@fullcalendar/interaction';
+import bootstrapPlugin from '@fullcalendar/bootstrap';
+import { formatDate } from '@fullcalendar/core';
 
 @Component({
   selector: 'app-root',
@@ -12,42 +14,65 @@ import interactionPlugin from '@fullcalendar/interaction'; // for dateClick
 })
 export class AppComponent {
 
-  @ViewChild('calendar') calendarComponent: FullCalendarComponent; // the #calendar in the template
+  @ViewChild('calendar') calendarComponent: FullCalendarComponent;
+  calendarPlugins = [dayGridPlugin, timeGridPlugin, interactionPlugin, bootstrapPlugin];
+  calendarWeekends = false;
+  calendarEvents: EventInput[] = [];
+  idCount: number = 1;
+  crId: any;
+  crTitle: any;
+  crDate: any;
+  dispDate = formatDate('2018-09-01', {
+    month: 'long',
+    year: 'numeric',
+    day: 'numeric',
+    timeZoneName: 'short',
+    timeZone: 'UTC',
+    locale: 'es'
+  });
 
-  calendarVisible = true;
-  calendarPlugins = [dayGridPlugin, timeGrigPlugin, interactionPlugin];
-  calendarWeekends = true;
-  calendarEvents: EventInput[] = [
-    { title: 'Today', start: new Date() }
-  ];
-
-  toggleVisible() {
-    this.calendarVisible = !this.calendarVisible;
+  // Add Click Handler
+  handleDateClick(arg: any) {
+    this.crDate = arg.date;
+    this.dispDate = formatDate(arg.date, {
+      month: 'long',
+      year: 'numeric',
+      day: 'numeric',
+      timeZoneName: 'short',
+      timeZone: 'IST',
+      locale: 'in'
+    });
+    document.getElementById('addEvent').click();
   }
 
-  toggleWeekends() {
-    this.calendarWeekends = !this.calendarWeekends;
+  // Delete Click Handler
+  handleEventClick(arg: any) {
+    this.crId = arg.event.id;
+    this.crTitle = arg.event.title;
+    this.crDate = arg.event.date;
+    document.getElementById('deleteEvent').click();
   }
 
-  gotoPast() {
-    let calendarApi = this.calendarComponent.getApi();
-    calendarApi.gotoDate('2000-01-01'); // call a method on the Calendar object
+  // Adds Event to the List
+  addEvent() {
+    this.calendarEvents = this.calendarEvents.concat({
+      id: ++this.idCount,
+      title: this.crTitle,
+      start: this.crDate
+    });
+    console.log(this.calendarEvents);
+    document.getElementById('closeModal').click();
   }
 
-  handleDateClick(arg) {
-    console.log(arg);
-    // if (confirm('Would you like to add an event to ' + arg.dateStr + ' ?')) {
-      this.calendarEvents = this.calendarEvents.concat({ // add new event data. must create new array
-        title: 'New Event',
-        start: arg.date
-      })
-    //}
-  }
-
-  handleEventClick(arg) {
-    console.log(arg + "was deleted!");
-    this.calendarEvents.splice(this.calendarEvents.indexOf({ title: arg.event.title, start: arg.event.start }), 1);
-    arg.event.remove();
+  // Deletes Event from the List 
+  deleteEvent() {
+    this.calendarEvents.forEach(obj => {
+      if (obj.id == this.crId) {
+        this.calendarEvents.splice(this.calendarEvents.indexOf(obj), 1);
+      }
+      console.log(this.calendarEvents);
+    });
+    document.getElementById('closeDelete').click();
   }
 
 }
